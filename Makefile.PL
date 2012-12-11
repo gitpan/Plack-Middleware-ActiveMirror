@@ -21,10 +21,9 @@ my %WriteMakefileArgs = (
   "NAME" => "Plack::Middleware::ActiveMirror",
   "PREREQ_PM" => {
     "CHI" => 0,
-    "JSON" => 0,
     "Web::Request" => 0
   },
-  "VERSION" => "0.01",
+  "VERSION" => "0.02",
   "test" => {
     "TESTS" => ""
   }

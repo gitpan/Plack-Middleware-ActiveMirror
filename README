@@ -1,7 +1,7 @@
 
 
 This archive contains the distribution Plack-Middleware-ActiveMirror,
-version 0.01:
+version 0.02:
 
   mirror parts of your app e.g. for offline hacking
 

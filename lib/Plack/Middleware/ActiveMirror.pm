@@ -4,25 +4,20 @@ use strict;
 use warnings;
 use parent 'Plack::Middleware';
 
-use Plack::Util::Accessor qw( cache json vary always_fetch );
+use Plack::Util::Accessor qw( cache vary always_fetch );
 
 use Web::Request;
-use JSON ();
 
 sub prepare_app {
     my $self = shift;
 
     unless ($self->cache) {
         require Carp;
-        Carp::confess("ActiveMirror requires a `cache`");
+        Carp::confess("ActiveMirror requires a cache");
     }
 
     unless ($self->vary) {
         $self->vary(['path', 'all_parameters', 'method']);
-    }
-
-    unless ($self->json) {
-        $self->json(JSON->new->canonical);
     }
 }
 
@@ -30,13 +25,11 @@ sub key_from_env {
     my ($self, $env) = @_;
 
     my $req = Web::Request->new_from_env($env);
-    my %key_params = (
+    my %key = (
         map { $_ => $req->$_ } @{ $self->vary }
     );
 
-    my $key = $self->json->encode(\%key_params);
-
-    return $key;
+    return \%key;
 }
 
 sub call {
@@ -83,7 +76,7 @@ Plack::Middleware::ActiveMirror - mirror parts of your app e.g. for offline hack
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -107,11 +100,11 @@ Hi, CPAN. My name is Shawn. I have a connectivity problem.
 We have beautifully-designed Web Services (implemented by handsome
 fellows!) for our C<$client> project, but we don't always have
 connectivity to them. I like to hack from cafés with crappy internet,
-which means lots of pain just to load a page since each page has
+which means lots of pain just to load a page, since each page has
 to make multiple requests to our web services.
 
-So I got to thinking, why not cache the web services responses?  As
-long as the responses form a coherent, reasonably current snapshot,
+So I got to thinking, why not cache the responses from web services?
+As long as the responses form a coherent, reasonably current snapshot,
 it should work fine. Sure, I can't expect to do everything my app
 supports just with these cached responses, but at least my JavaScript
 loads, and that lets me limp along well enough to continue generating
@@ -127,23 +120,20 @@ and how.
 I also wanted to make sure that in the normal case of perfect
 connectivity, my application would behave normally: every request
 would proxy to my web services as usual. There would be an additional
-side effect of every response being put into a cache, effectively
-generating a partial, static mirror of your web services. Then,
+side effect of putting every response into a cache, effectively
+generating a partial, static mirror of my web services. Then,
 when connectivity goes down the drain, I can flip a switch and now
 ActiveMirror can serve responses out of cache on behalf of the
 now-inaccessible web services.
+
+=encoding utf-8
 
 =head1 THE CACHE
 
 L<Plack::Middleware::ActiveMirror> relies on L<CHI> to manage its
 cache. This gives you enormous flexibility in how your responses
-are stored: in memory, on disk, in a database, whatever L<CHI>
-supports. This means that you must pass an instance of L<CHI> to
-get yourself going. (The only L<CHI> API that this module uses is
-C<< ->get($key) >> and C<< ->set($key, $value) >> so if you're
-sneaky you can provide any kind of cache object -- but! I explicitly
-do I<not> promise that this module will continue using only those
-two methods with those arguments in perpetuity).
+are stored: in memory, on disk, in a database -- anything L<CHI>
+supports.
 
 =head1 OPTIONS
 
@@ -167,13 +157,6 @@ build up your cache for when you lose connectivity. So, by default,
 set C<always_fetch>, but then when you go offline, turn off
 C<always_fetch>.
 
-=head2 C<json>
-
-An instance of L<JSON> simply kept around to avoid having to
-initialize it every request. You can pass in your own L<JSON> object
-if you need different options for some reason; be sure to set
-C<canonical>!
-
 =head1 SEE ALSO
 
 L<Plack::Middleware::Cache>
@@ -193,6 +176,5 @@ the same terms as the Perl 5 programming language system itself.
 
 
 __END__
-
 
 
